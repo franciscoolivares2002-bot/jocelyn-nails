@@ -1,12 +1,150 @@
-document.querySelectorAll('.gallery img').forEach(img=>{
-  img.addEventListener('click',()=>{
-    const overlay=document.createElement('div');
-    overlay.className='lightbox';
-    overlay.innerHTML=`<img src="${img.src}" alt="${img.alt}"><button>Cerrar ✕</button>`;
-    document.body.appendChild(overlay);
-    overlay.addEventListener('click',()=>overlay.remove());
+const SUPABASE_URL = "https://ubdkxgwsiogypgciyovp.supabase.co";
+const SUPABASE_KEY = "sb_publishable_aEenmxbE5meJQZ2vunYvyw_HlcT_9gA";
+
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const servicios = {
+  esmaltado: { nombre: "💅 Esmaltado", duracion: 2 },
+  retiro: { nombre: "💅 Esmaltado + retiro", duracion: 2 },
+  polygel: { nombre: "✨ Extensiones PolyGel", duracion: 3 }
+};
+
+const fecha = document.querySelector("#agenda-fecha");
+const servicio = document.querySelector("#agenda-servicio");
+const horasBox = document.querySelector("#agenda-horas");
+const form = document.querySelector("#agenda-form");
+const mensaje = document.querySelector("#agenda-mensaje");
+let horaSeleccionada = "";
+
+function hoyISO(){
+  return new Date().toISOString().split("T")[0];
+}
+
+fecha.min = hoyISO();
+
+function diaSemana(fechaISO){
+  const [y,m,d] = fechaISO.split("-").map(Number);
+  return new Date(y, m - 1, d).getDay();
+}
+
+async function obtenerReservas(fechaISO){
+  const { data, error } = await db
+    .from("Reservas")
+    .select("*")
+    .eq("fecha", fechaISO);
+
+  if(error){
+    console.error(error);
+    return [];
+  }
+
+  return data || [];
+}
+
+function calcularHoras(fechaISO, reservas, servicioElegido){
+  const dia = diaSemana(fechaISO);
+  if(dia === 0) return [];
+
+  let horas = dia === 6 ? ["11:00", "16:00"] : ["11:00", "15:00", "17:00"];
+
+  const tomadas = reservas.map(r => r.hora);
+  const hayPolyGel15 = reservas.some(r => r.servicio.includes("PolyGel") && r.hora === "15:00");
+
+  if(hayPolyGel15 && !tomadas.includes("18:00")){
+    horas.push("18:00");
+  }
+
+  if(servicioElegido === "polygel"){
+    horas = horas.filter(h => {
+      if(h === "18:00") return false;
+      if(tomadas.includes(h)) return false;
+      if(h === "15:00" && tomadas.includes("17:00")) return false;
+      if(h === "16:00") return false;
+      return true;
+    });
+  } else {
+    horas = horas.filter(h => {
+      if(tomadas.includes(h)) return false;
+      if(hayPolyGel15 && h === "17:00") return false;
+      return true;
+    });
+  }
+
+  return horas;
+}
+
+async function cargarHoras(){
+  horasBox.innerHTML = "";
+  horaSeleccionada = "";
+  mensaje.textContent = "";
+
+  if(!fecha.value || !servicio.value){
+    horasBox.innerHTML = "<p>🌸 Primero elige servicio y fecha.</p>";
+    return;
+  }
+
+  const reservas = await obtenerReservas(fecha.value);
+  const disponibles = calcularHoras(fecha.value, reservas, servicio.value);
+
+  if(disponibles.length === 0){
+    horasBox.innerHTML = "<p>😔 No hay horas disponibles para ese día.</p>";
+    return;
+  }
+
+  disponibles.forEach(hora => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "hora-btn";
+    btn.textContent = "🕒 " + hora;
+
+    btn.onclick = () => {
+      document.querySelectorAll(".hora-btn").forEach(b => b.classList.remove("activa"));
+      btn.classList.add("activa");
+      horaSeleccionada = hora;
+    };
+
+    horasBox.appendChild(btn);
   });
+}
+
+servicio.addEventListener("change", cargarHoras);
+fecha.addEventListener("change", cargarHoras);
+
+form.addEventListener("submit", async e => {
+  e.preventDefault();
+
+  const nombre = document.querySelector("#agenda-nombre").value.trim();
+  const telefono = document.querySelector("#agenda-telefono").value.trim();
+
+  if(!servicio.value || !fecha.value || !horaSeleccionada || !nombre || !telefono){
+    mensaje.textContent = "⚠️ Completa todos los datos y selecciona una hora.";
+    return;
+  }
+
+  const reservas = await obtenerReservas(fecha.value);
+  const disponibles = calcularHoras(fecha.value, reservas, servicio.value);
+
+  if(!disponibles.includes(horaSeleccionada)){
+    mensaje.textContent = "😔 Esa hora acaba de ser tomada. Elige otra.";
+    await cargarHoras();
+    return;
+  }
+
+  const { error } = await db.from("Reservas").insert({
+    nombre,
+    telefono,
+    servicio: servicios[servicio.value].nombre,
+    fecha: fecha.value,
+    hora: horaSeleccionada
+  });
+
+  if(error){
+    console.error(error);
+    mensaje.textContent = "❌ No se pudo guardar la reserva.";
+    return;
+  }
+
+  mensaje.textContent = "✅ Reserva realizada con éxito. Te esperamos 💅✨";
+  form.reset();
+  await cargarHoras();
 });
-const style=document.createElement('style');
-style.textContent=`.lightbox{position:fixed;inset:0;background:rgba(30,14,32,.88);z-index:99;display:grid;place-items:center;padding:20px}.lightbox img{max-width:min(96vw,900px);max-height:86vh;border-radius:24px;box-shadow:0 30px 80px #0008}.lightbox button{position:fixed;top:18px;right:18px;border:0;border-radius:999px;background:white;color:#211323;font-weight:900;padding:12px 18px;cursor:pointer}`;
-document.head.appendChild(style);
