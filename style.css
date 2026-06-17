@@ -45,19 +45,23 @@ opacity:.55;
 }
 
 .hero:before{
-width:550px;
-height:550px;
-background:#9cf3df;
-right:-120px;
-top:40px;
+    width:360px;
+    height:360px;
+    background:#bff4e8;
+    right:-90px;
+    top:90px;
+    filter:blur(8px);
+    opacity:0.75;
 }
 
 .hero:after{
-width:520px;
-height:520px;
-background:#ff4ca8;
-left:-180px;
-bottom:-180px;
+    width:420px;
+    height:420px;
+    background:#ff7fbe;
+    left:-120px;
+    bottom:-120px;
+    filter:blur(8px);
+    opacity:0.75;
 }
 
 .nav{
