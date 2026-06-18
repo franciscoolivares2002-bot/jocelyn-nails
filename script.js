@@ -115,6 +115,7 @@ form.addEventListener("submit", async e => {
 
   const nombre = document.querySelector("#agenda-nombre").value.trim();
   const telefono = document.querySelector("#agenda-telefono").value.trim();
+  const correo = document.querySelector("#agenda-correo").value.trim();
 
   if(!servicio.value || !fecha.value || !horaSeleccionada || !nombre || !telefono){
     mensaje.textContent = "⚠️ Completa todos los datos y selecciona una hora.";
@@ -133,6 +134,7 @@ form.addEventListener("submit", async e => {
   const { error } = await db.from("Reservas").insert({
     nombre,
     telefono,
+    correo,
     servicio: servicios[servicio.value].nombre,
     fecha: fecha.value,
     hora: horaSeleccionada
