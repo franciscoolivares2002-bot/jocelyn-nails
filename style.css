@@ -386,3 +386,63 @@ footer img{
     height:50px;
   }
 }
+.agenda-card{
+  max-width:720px;
+  margin:auto;
+  background:#ffffffcc;
+  border:1px solid white;
+  border-radius:32px;
+  padding:26px;
+  box-shadow:0 22px 55px #b7479320;
+  display:grid;
+  gap:14px;
+}
+
+.agenda-card label{
+  font-weight:900;
+  color:#c82782;
+}
+
+.agenda-card input,
+.agenda-card select{
+  width:100%;
+  padding:15px 18px;
+  border-radius:18px;
+  border:2px solid #ffd0ec;
+  font-size:16px;
+  outline:none;
+}
+
+.agenda-horas{
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+}
+
+.hora-btn{
+  border:0;
+  border-radius:999px;
+  padding:13px 20px;
+  background:linear-gradient(135deg,#ffd2e8,#e4ceff);
+  font-weight:900;
+  cursor:pointer;
+}
+
+.hora-btn.activa{
+  background:linear-gradient(135deg,#ff4ca8,#9f6cff);
+  color:white;
+}
+
+.special-time{
+  background:#fff6fb;
+  border-radius:22px;
+  padding:16px;
+  text-align:center;
+  font-weight:700;
+}
+
+#agenda-mensaje{
+  text-align:center;
+  font-weight:900;
+  color:#c82782;
+}
