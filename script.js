@@ -165,9 +165,8 @@ await emailjs.send(
   }
 );
 
-mensaje.textContent = "✅ Reserva realizada con éxito. Te esperamos 💅✨";
-
 form.reset();
-
 await cargarHoras();
+
+mensaje.textContent = "✅ Reserva agendada correctamente. Revisa tu correo de confirmación (recuerda revisar tu bandeja de spam), sino comunicate directamente a mi telefono 💅✨";
 });
